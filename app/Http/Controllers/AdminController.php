@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Model\User
 
 class AdminController extends Controller
 {
@@ -36,6 +36,37 @@ class AdminController extends Controller
 
         $data = User::find($id);
 
-        return view('admin.profile', compact('data');
+        return view('admin.profile', compact('data'));
+    }
+
+    public function update(Request $request)
+    {
+        $id = Auth::user()->id;
+
+        $data = User::find($id);
+
+        $data->username = $request->username;
+        $data->name     = $request->name;
+        $data->address  = $request->address;
+        $data->phone    = $request->phone;
+        $data->email    = $request->email;
+//        $data->photo    = $request->showImage;
+
+        if ($request->file('photo'))
+        {
+            $file = $request->file('photo');
+            $filename = date('YmdHi').$file->getClientOriginalName();
+            $file->move(public_path('upload/admin_images'), $filename);
+            $data['photo'] = $filename;
+        }
+
+        $data->save();
+
+        $notification = array(
+            'message' => "Admin profile updated successfully!",
+            'alert-type' => 'success'
+        );
+
+        return redirect()->back()->with($notification);
     }
 }
